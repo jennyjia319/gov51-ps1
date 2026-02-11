@@ -5,15 +5,15 @@ repo: "https://github.com/jennyjia319/gov51-ps1"
 format: pdf
 ---
 
-### 2. Get To Know Your Data
+# 2. Get To Know Your Data
 
-# 1. 
+### 1. 
 ```{r}
 library(tidyverse)
 dataset <- read_csv("data/raw/usa_00002.csv.gz") # reading my dataset
 ```
 
-# 2. 
+### 2. 
 STATEFIP = state FIPS code in which the household was located in 
 AGE = an individual's age (as of their last birthday)
 SEX = an individual's gender (male or female)
@@ -26,7 +26,7 @@ TRANTIME = 0 means the individual does not/did not commmute to work, perhaps bec
 
 PERWT = Weight that IPUMS assigns to make their sample representative of the population of the US. Each person in the dataset represents multiple individuals in the population PERWT indicates how many people it represents
 
-# 3. 
+### 3. 
 ```{r}
 dataset <- dataset |>
   mutate(
@@ -56,10 +56,10 @@ summary(dataset$female) # checking to see if code worked
 table(dataset$employed)
 ```
 
-# 4. 
+### 4. 
 Treating NA codes as actual zeros would distort the results because those values do not represent actual observations. For example, if TRANTIME = 0  means a person worked from home/had no real commute, counting it as a zero-minute commute would  lower the average travel time to work. This would make it seem like people commute much less than they actually do and lead to misleading conclusions about transportation statistics. 
 
-# 5. 
+### 5. 
 ```{r}
 dataset <- dataset |>
   mutate(
@@ -111,14 +111,14 @@ dataset_table <- tibble(
   select(-x)
 
 kable(dataset_table, digits = 2,
-      caption = "Table 1: Summary Statistics for 2024 ACS Sample")
+      caption = "Summary Statistics for 2024 ACS Sample")
 ```
-# 6.
+### 6.
 The maximum commute time is 195 minutes, or over 3 hours, which personally doesn't make much sense to me. However, I understand that this is still a possibility for those who travel extremely far for work, or for those who take different methods of public transportation.
 
-### 3 Who Should Be in My Analysis?
+# 3 Who Should Be in My Analysis?
 
-# 1. 
+### 1. 
 ```{r}
 
 zero_commute <- sum(dataset$TRANTIME == 0, na.rm = TRUE) # where TRANTIME = 0
@@ -133,7 +133,7 @@ zero_commute_percent
 ```
 According to the results, 2,062,945 people do not commute to work, which is about 60% of the total population. While this number seems rather high, this makes sense, if you consider the fact that students, children, unemployed, and retired people all don't have a commute to work.
 
-# 2.
+### 2.
 ```{r}
 commuters <- dataset |>
   filter( # now I will filter for only people that actually have a commute to work
@@ -144,14 +144,14 @@ commuters <- dataset |>
 ```
 I restricted the sample to individuals who are employed, at least 16 years old, and have a commute time greater than zero. This removes children, retirees, unemployed people, and people who work from home. Also, although the legal minimum working age is 14, 16 is the age used by the Bureau of Labor Statistics, so I shall stick with 16 instead of 14.
 
-# 3.
+### 3.
 ```{r}
 nrow(commuters) # new number of observations
 min(commuters$TRANTIME) # new minimum commute time
 ```
 After restricting the dataset to employed individuals aged 16 or older with a commute time greater than zero, 1,359,943 observations remain. The minimum commute time is now 1 minute, which makes sense because individuals with no commute were excluded from the analysis.
 
-# 4.
+### 4.
 ```{r}
 library(knitr)
 
@@ -197,16 +197,16 @@ commuters_table <- tibble(
 kable(
   commuters_table,
   digits = 2,
-  caption = "Table 2: Summary Statistics for Commuters Subset"
+  caption = "Summary Statistics for Commuters Subset"
 )
 
 ```
-# 5. 
+### 5. 
 This step was completed using the commit function. 
 
-### 4. Visualize and Interpret
+# 4. Visualize and Interpret
 
-# 1.
+### 1.
 ```{r}
 ggplot(commuters, aes(x = TRANTIME)) +
   geom_histogram(binwidth = 4, fill = "lightpink", color = "white") +
@@ -219,7 +219,7 @@ ggplot(commuters, aes(x = TRANTIME)) +
 # 2.
 The distribution of commute times is skewed right, which means most people have relatively short commutes to work, although a select few people have longer ones that exceed 100 minutes. The center, or median, appears to be around 20-30 minutes. There are spikes every 10 minutes, for example, at 20 minutes. This could indicate that people are rounding their commute, as it is hard to report a very precise commute time. 
 
-# 3.
+### 3.
 ```{r}
 mean <- mean(commuters$TRANTIME, na.rm = TRUE) # doing some calculations for precise values
 median <- median(commuters$TRANTIME, na.rm = TRUE)
@@ -237,10 +237,10 @@ ggsave(
 )
 ```
 
-# 5. 
+### 5. 
 Committing results should show on GitHub. 
 
-### 5. The Weight of Evidence
+# 5. The Weight of Evidence
 1. 
 ```{r}
 weighted_mean <- weighted.mean(
@@ -251,10 +251,10 @@ weighted_mean <- weighted.mean(
 
 weighted_mean
 ```
-# 2.
+### 2.
 The weighted and unweighted means are slightly different. The weighted mean is 27.19 minutes, whereas the unweighted is 27.21 minutes. The difference is 0.02 minutes. 
 
-# 3.
+### 3.
 The unweighted mean represents the average commute time among the individuals in the survey sample, while the weighted mean represents the estimated average commute time for the entire US population using survey weights. They might differ because some demographic groups can be overrepresented in the sample, and weights correct for that imbalance. In this case, the numbers are essentially identical, which suggests that the sample is already fairly representative of the population.
 ```
 
