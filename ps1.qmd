@@ -201,4 +201,30 @@ kable(
 )
 
 ```
+# 5. 
+This step was completed using the commit function. 
 
+### 4. Visualize and Interpret
+
+# 1.
+```{r}
+ggplot(commuters, aes(x = TRANTIME)) +
+  geom_histogram(binwidth = 4, fill = "lightpink", color = "white") +
+  labs(
+    title = "Commute Times for American Workers in 2024",
+    x = "Commute Time (Minutes)",
+    y = "Number of People"
+  )
+```
+# 2.
+The distribution of commute times is skewed right, which means most people have relatively short commutes to work, although a select few people have longer ones that exceed 100 minutes. The center, or median, appears to be around 20-30 minutes. There are spikes every 10 minutes, for example, at 20 minutes. This could indicate that people are rounding their commute, as it is hard to report a very precise commute time. 
+
+# 3.
+```{r}
+mean <- mean(commuters$TRANTIME, na.rm = TRUE) # doing some calculations for precise values
+median <- median(commuters$TRANTIME, na.rm = TRUE)
+mean
+median
+```
+
+On the table, the mean commute time is 10.81 minutes, while the median is lower, around 5–7 minutes, which means the mean is larger than the median. This indicates a right-skewed distribution, where a small number of very long commutes pull the average upward. On the histogram, the mean commute time is ~27 minutes, and the median is 20 minutes. Despite differences in values, the shape of the skew remains the same right skew because, in both cases, the median is smaller than the man. Most people clustered at short commute times, but there are obviously a few outliers that exceed 100 minutes in commute time. 
