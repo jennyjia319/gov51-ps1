@@ -5,6 +5,200 @@ repo: "https://github.com/jennyjia319/gov51-ps1"
 format: html
 ---
 
+### 2. Get To Know Your Data
+
+# 1. 
 ```{r}
-git remote add origin https://github.com/YOURUSERNAME/gov51-ps1.git
+library(tidyverse)
+dataset <- read_csv("data/raw/usa_00002.csv.gz") # reading my dataset
 ```
+
+# 2. 
+STATEFIP = state FIPS code in which the household was located in 
+AGE = an individual's age (as of their last birthday)
+SEX = an individual's gender (male or female)
+EDUC = an individual's education level (highest year completed)
+EMPSTAT = employment status 
+TRANTIME = total time in minutes for commute to work
+INCTOT = total pre-tax personal income
+
+TRANTIME = 0 means the individual does not/did not commmute to work, perhaps because they work from home. It does not mean that their commute was 0 minutes.
+
+PERWT = Weight that IPUMS assigns to make their sample representative of the population of the US. Each person in the dataset represents multiple individuals in the population PERWT indicates how many people it represents
+
+# 3. 
+```{r}
+dataset <- dataset |>
+  mutate(
+    female = if_else(SEX== 2, 1, 0) # creating binary 1 = female 0 = male 
+  )
+
+dataset <- dataset |>
+  mutate (
+    less_than_hs = if_else(EDUC %in% 1:5, 1, 0),   
+    hs_only = if_else(EDUC == 6, 1, 0),            
+    some_college = if_else(EDUC %in% 7:8, 1, 0),   
+    college_only = if_else(EDUC == 9, 1, 0),       
+    advanced_degree = if_else(EDUC %in% 10:11, 1, 0)
+  )
+
+dataset <- dataset |>
+mutate(
+  employed = if_else(EMPSTAT == 1, 1, 0), # create employment dummy variables
+  unemployed = if_else(EMPSTAT == 2, 1, 0),
+  not_in_labor_force = if_else(EMPSTAT == 3, 1, 0)
+)
+```
+
+```{r}
+summary(dataset$female) # checking to see if code worked
+
+table(dataset$employed)
+```
+
+# 4. 
+Treating NA codes as actual zeros would distort the results because those values do not represent actual observations. For example, if TRANTIME = 0  means a person worked from home/had no real commute, counting it as a zero-minute commute would  lower the average travel time to work. This would make it seem like people commute much less than they actually do and lead to misleading conclusions about transportation statistics. 
+
+# 5. 
+```{r}
+dataset <- dataset |>
+  mutate(
+    INCTOT = if_else(INCTOT >= 9999999, NA, INCTOT) # had a problem with unrealistic total income value, so I am removing them
+  )
+```
+
+
+```{r}
+library(knitr)
+
+dataset_table <- tibble(
+  Variable = c(
+    "Age (years)",
+    "Female (1=female)",
+    "Less than High School (1=yes)",
+    "High School Only (1=yes)",
+    "Some College (1=yes)",
+    "College Only (1=yes)",
+    "Advanced Degree (1=yes)",
+    "Employed (1=yes)",
+    "Unemployed (1=yes)",
+    "Not in Labor Force (1=yes)",
+    "Commute Time (mins)",
+    "Total Income ($)"
+  ),
+  x = list(
+    dataset$AGE,
+    dataset$female,
+    dataset$less_than_hs,
+    dataset$hs_only,
+    dataset$some_college,
+    dataset$college_only,
+    dataset$advanced_degree,
+    dataset$employed,
+    dataset$unemployed,
+    dataset$not_in_labor_force,
+    dataset$TRANTIME,
+    dataset$INCTOT
+  )
+) |>
+  mutate(
+    N = map_int(x, ~ sum(!is.na(.x))),
+    Mean = map_dbl(x, ~ mean(.x, na.rm = TRUE)),
+    `Std. Dev.` = map_dbl(x, ~ sd(.x, na.rm = TRUE)),
+    Min = map_dbl(x, ~ min(.x, na.rm = TRUE)),
+    Max = map_dbl(x, ~ max(.x, na.rm = TRUE))
+  ) |>
+  select(-x)
+
+kable(dataset_table, digits = 2,
+      caption = "Table 1: Summary Statistics for 2024 ACS Sample")
+```
+# 6.
+The maximum commute time is 195 minutes, or over 3 hours, which personally doesn't make much sense to me. However, I understand that this is still a possibility for those who travel extremely far for work, or for those who take different methods of public transportation.
+
+### 3 Who Should Be in My Analysis?
+
+# 1. 
+```{r}
+
+zero_commute <- sum(dataset$TRANTIME == 0, na.rm = TRUE) # where TRANTIME = 0
+
+total <- nrow(dataset) # total observations
+
+zero_commute_percent <- zero_commute / total * 100 # percentage
+
+zero_commute
+zero_commute_percent
+
+```
+According to the results, 2,062,945 people do not commute to work, which is about 60% of the total population. While this number seems rather high, this makes sense, if you consider the fact that students, children, unemployed, and retired people all don't have a commute to work.
+
+# 2.
+```{r}
+commuters <- dataset |>
+  filter( # now I will filter for only people that actually have a commute to work
+    EMPSTAT == 1, # employed people
+    TRANTIME > 0, # has a real commute
+    AGE >= 16   
+  )
+```
+I restricted the sample to individuals who are employed, at least 16 years old, and have a commute time greater than zero. This removes children, retirees, unemployed people, and people who work from home. Also, although the legal minimum working age is 14, 16 is the age used by the Bureau of Labor Statistics, so I shall stick with 16 instead of 14.
+
+# 3.
+```{r}
+nrow(commuters) # new number of observations
+min(commuters$TRANTIME) # new minimum commute time
+```
+After restricting the dataset to employed individuals aged 16 or older with a commute time greater than zero, 1,359,943 observations remain. The minimum commute time is now 1 minute, which makes sense because individuals with no commute were excluded from the analysis.
+
+# 4.
+```{r}
+library(knitr)
+
+commuters_table <- tibble(
+  Variable = c(
+    "Age (years)",
+    "Female (1=female)",
+    "Less than High School (1=yes)",
+    "High School Only (1=yes)",
+    "Some College (1=yes)",
+    "College Only (1=yes)",
+    "Advanced Degree (1=yes)",
+    "Employed (1=yes)",
+    "Unemployed (1=yes)",
+    "Not in Labor Force (1=yes)",
+    "Commute Time (mins)",
+    "Total Income ($)"
+  ),
+  x = list(
+    commuters$AGE,
+    commuters$female,
+    commuters$less_than_hs,
+    commuters$hs_only,
+    commuters$some_college,
+    commuters$college_only,
+    commuters$advanced_degree,
+    commuters$employed,
+    commuters$unemployed,
+    commuters$not_in_labor_force,
+    commuters$TRANTIME,
+    commuters$INCTOT
+  )
+) |>
+  mutate(
+    N = map_int(x, ~ sum(!is.na(.x))),
+    Mean = map_dbl(x, ~ mean(.x, na.rm = TRUE)),
+    `Std. Dev.` = map_dbl(x, ~ sd(.x, na.rm = TRUE)),
+    Min = map_dbl(x, ~ min(.x, na.rm = TRUE)),
+    Max = map_dbl(x, ~ max(.x, na.rm = TRUE))
+  ) |>
+  select(-x)
+
+kable(
+  commuters_table,
+  digits = 2,
+  caption = "Table 2: Summary Statistics for Commuters Subset"
+)
+
+```
+
