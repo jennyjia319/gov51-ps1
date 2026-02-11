@@ -2,7 +2,7 @@
 title: "ps1"
 author: "Jenny Jia"
 repo: "https://github.com/jennyjia319/gov51-ps1"
-format: html
+format: pdf
 ---
 
 ### 2. Get To Know Your Data
@@ -227,8 +227,7 @@ mean
 median
 ```
 
-On the table, the mean commute time is 10.81 minutes, while the median is lower, around 5–7 minutes, which means the mean is larger than the median. This indicates a right-skewed distribution, where a small number of very long commutes pull the average upward. On the histogram, the mean commute time is ~27 minutes, and the median is 20 minutes. Despite differences in values, the shape of the skew remains the same right skew because, in both cases, the median is smaller than the man. Most people clustered at short commute times, but there are obviously a few outliers that exceed 100 minutes in commute time.
-
+In the commuters subset, the mean commute time is 27.21 minutes and the median is 20 minutes, so the mean is larger. This indicates a right-skewed distribution where a small number of very long commutes pull the average upward. This matches the histogram, which shows most commute times clustered below about 40 minutes with a long right tail.
 # 4.
 ```{r}
 ggsave(
