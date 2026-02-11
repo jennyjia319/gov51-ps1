@@ -1,7 +1,10 @@
 ---
 title: "ps1"
+author: "Jenny Jia"
+repo: "https://github.com/jennyjia319/gov51-ps1"
 format: html
-editor: visual
 ---
 
-## 
+```{r}
+git remote add origin https://github.com/YOURUSERNAME/gov51-ps1.git
+```

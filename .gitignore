@@ -3,3 +3,4 @@
 .RData
 .Ruserdata
 data/raw/usa_00002.csv.gz
+.DS_Store
